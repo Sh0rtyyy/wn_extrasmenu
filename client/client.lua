@@ -52,8 +52,13 @@ function OpenMenu(option, vehicle)
                     icon = toggle,
                     iconColor = toggleColor,
                     onSelect = function()
+                        if Config.DisableExtrasOnDamagedVehicles and IsVehicleDamaged(veh) and not isEnabled then
+                            Notify("error", "Extras", "Cannot enable Extra because the vehicle is damaged", 3000)
+                            return
+                        end
+                            
                         SetVehicleExtra(veh, extraID, isEnabled and 1 or 0)
-                        print(string.format("Toggled Extra %d to %s", extraID, tostring(not isEnabled)))
+                        Notify("success", "Extras", "Toggled Extra " ..  extraID .. " to " tostring(not isEnabled), 3000)
                         OpenMenu('extras', veh)
                     end
                 })
@@ -85,7 +90,7 @@ function OpenMenu(option, vehicle)
                     iconColor = toggleColor,
                     onSelect = function()
                         SetVehicleLivery(veh, i)
-                        print("Livery set to ID: " .. i)
+                        Notify("success", "Liery", "Livery set to ID: " .. i, 3000)
                         OpenMenu('livery', veh)
                     end
                 })
@@ -101,6 +106,46 @@ function OpenMenu(option, vehicle)
             lib.showContext('vehicle_livery_menu')
         else
             print("This vehicle has no liveries.")
+        end
+    end
+end
+
+function Notify(type, title, text, icon, time)
+    if Config.Notify == "ESX" then
+        ESX.ShowNotification(text)
+    elseif Config.Notify == "ox_lib" then
+        if type == "success" then
+            lib.notify({
+                title = title,
+                duration = time,
+                description = text,
+                icon = "fas fa-receipt",
+                type = "success"
+            })
+        elseif type == "inform" then
+            lib.notify({
+                title = title,
+                duration = time,
+                description = text,
+                icon = "fas fa-receipt",
+                type = "inform"
+            })
+        elseif type == "error" then
+            lib.notify({
+                title = title,
+                duration = time,
+                description = text,
+                icon = "fas fa-receipt",
+                type = "error"
+            })
+        end
+    elseif Config.Notify == "qbcore" then
+        if type == "success" then
+            QBCore.Functions.Notify(text, "success")
+        elseif type == "info" then
+            QBCore.Functions.Notify(text, "primary")
+        elseif type == "error" then
+            QBCore.Functions.Notify(text, "error")
         end
     end
 end
